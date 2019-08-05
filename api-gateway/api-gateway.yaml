@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: API Gateway.
+
+Resources:
+
+  ApiGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Description: Api Gateway Rest API.
+      FailOnWarnings: false
+      Name: ApiGatewayRestApiExample
+    EndpointConfiguration:
+      Types:
+        - PRIVATE
+    Policy:
+      Version: '2012-10-17'
+      Statement:
+      - Action:
+        - "execute-api:Invoke"
+        Effect: Allow
+        Principal: "*"
+        Resource: arn:aws:execute-api:us-east-1:something/*
+        Condition:
+          StringEquals:
+            aws:SourceVpc: vpc-abcdefg
+
+  ApiGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      ApiKeyRequired: false
+      AuthorizationType: NONE
+      HttpMethod: GET
+      MethodResponses:
+        - StatusCode: 200
+      ResourceId: !GetAtt [ ApiGatewayRestApi, RootResourceId ]
+      Properties:
+        Integration:
+          Type: AWS
+          Credentials: !GetAtt [ ApiGatewayRole, Arn ]
+          IntegrationHttpMethod: GET
+          IntegrationResponses:
+            - StatusCode: 200
+          PassthroughBehavior: WHEN_NO_MATCH
+          Uri: arn:aws:apigateway:us-east-1:s3:path/bucke-name/data.json
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: ApiGatewayMethod
+    Properties:
+      RestApiId: !Ref ApiGatewayRestApi
+      StageName: definedStageName
