@@ -36,7 +36,8 @@ ApiGatewayRestApi:
       - "execute-api:Invoke"
       Effect: Allow
       Principal: "*"
-      Resource: arn:aws:execute-api:us-east-1:something/*
+      Resource:
+        - execute-api:/*/*/*
       Condition:
         StringEquals:
           aws:SourceVpc: vpc-abcdefg

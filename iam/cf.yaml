@@ -1,0 +1,135 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: IAM.
+
+Resources:
+
+  CustomManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: CustomManagedPolicyName
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: 'FirstStatement'
+            Action:
+              - "s3:PutObject"
+              - "s3:GetObject"
+            Effect: "Allow"
+            Resource: "arn:aws:s3:::*/*"
+
+  CustomExternalPolicyWithSpecifiedRole:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: CustomExternalPolicyNameWithSpecifiedRole
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: 'FirstStatement'
+            Action:
+              - "s3:PutObject"
+              - "s3:GetObject"
+            Effect: "Allow"
+            Resource: "arn:aws:s3:::*/*"
+      Roles:
+        - !Ref CustomRole
+
+  CustomExternalPolicyWithSpecifiedGroup:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: CustomExternalPolicyNameWithSpecifiedGroup
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: 'FirstStatement'
+            Action:
+              - "s3:PutObject"
+              - "s3:GetObject"
+            Effect: "Allow"
+            Resource: "arn:aws:s3:::*/*"
+      Groups:
+        - !Ref CustomGroup
+
+  CustomRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CustomRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref CustomManagedPolicy
+        - arn:aws:iam::aws:policy/AmazonRDSReadOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+
+  CustomRoleWithEmbeddedPolicy:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: CustomRoleNameWithEmbeddedPolicy
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: CustomEmbeddedPolicyName
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - "logs:CreateLogStream"
+                  - "logs:CreateLogGroup"
+                  - "logs:PutLogEvents"
+                  - "sns:Publish"
+                Effect: Allow
+                Resource: "*"
+              - Action:
+                  - "dynamodb:PutItem"
+                  - "dynamodb:DeleteItem"
+                  - "dynamodb:GetItem"
+                  - "dynamodb:Scan"
+                  - "dynamodb:Query"
+                  - "dynamodb:UpdateItem"
+                  - "dynamodb:BatchWriteItem"
+                Effect: Allow
+                Resource: "*"
+
+  CustomGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: CustomGroupName
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonRDSReadOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+
+  CustomGroupWithEmbeddedPolicy:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: CustomGroupNameWithEmbeddedPolicy
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonRDSReadOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: CustomGroupEmbeddedPolicyName
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Action:
+                  - "logs:CreateLogStream"
+                  - "logs:CreateLogGroup"
+                  - "logs:PutLogEvents"
+                  - "sns:Publish"
+                Effect: Allow
+                Resource: "*"
